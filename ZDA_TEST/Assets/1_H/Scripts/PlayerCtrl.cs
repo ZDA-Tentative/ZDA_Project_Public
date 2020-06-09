@@ -14,8 +14,14 @@ public class PlayerCtrl : MonoBehaviour
     public string CharacterName;    //플레이어 캐릭터의 이름 (이 정보를 바탕으로 세이브/로드한다.)
     //public                        //텍스쳐(스킨/복장)
 
-    private float speed = 0.01f;
-    private float dblClickSpeed = 0.5f;             //더블 클릭 시간
+    //이동 제어 변수
+    private float speed = 1f;
+    private float h, v;
+    private Vector3 movement;
+
+
+    bool mouse_l = false, mouse_r = false;
+    private float dblClickSpeed = 0.2f;             //더블 클릭 시간
     private float wheelingSpeed = 0.1f;             //휠 굴리는 시간(딜레이)
     private float comboTime = 0.5f;                 //콤보 입력을 받는 동안 기다리는 시간
     private KeyCode[] keycode = { KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.S };             //수정바람. (사용자가 입력한 키 일수도 있음)
@@ -24,12 +30,11 @@ public class PlayerCtrl : MonoBehaviour
     private float mouseWheeling = 0.1f;
     private bool isWheel = false;                   //휠 굴리는 중이냐?
     private bool isHold = false;                    //홀딩중이냐?
-    private float combodelay = 0.5f;                //콤보 딜레이
+    private float combodelay = 0.5f;                       //콤보 딜레이
     private int atkCount = 0;                       //공격 횟수
-    private bool isMouseDownL = false;
-    private bool isMouseDownR = false;
-    private float mouseTime = 0.5f;
+    private float mouseTime = 0.2f;
     private float mouseDelay;                       //마우스가 홀딩이냐 동시클릭이냐?
+    private bool isAttackAble = true;
 
 
     public Vector3 ch_pos           //플레이어의 위치값
@@ -39,10 +44,11 @@ public class PlayerCtrl : MonoBehaviour
             return mTrans.position;
         }
     }   
-    public Vector3 move             //플레이어의 이동값
-    {
-        get; private set;
-    }
+    /*public Vector3 move             //플레이어의 이동값
+     * {
+     *    get; private set;
+     * }
+     */
     public Vector3 ch_rot           //플레이어의 회전값
     {
         get
@@ -99,12 +105,14 @@ public class PlayerCtrl : MonoBehaviour
     private GameObject targetObj;    //타켓팅이 된 오브젝트
     private GameObject mGameObj;    //캐릭터
     private Transform mTrans;
+    private Rigidbody mRigid;
 
     void Awake()
     {
         OnValidate();
         mGameObj = this.gameObject;
         mTrans = this.transform;
+        mRigid = this.GetComponent<Rigidbody>();
 
         m_currentMotion = Motion.Idle;
         CharacterName = mGameObj.name;
@@ -141,10 +149,17 @@ public class PlayerCtrl : MonoBehaviour
     private void Update()
     {
         CoolTime();
+        if(atkCount >= 2)
+        {
+            atkCount = 0;
+        }
+
+        Debug.Log("모션 : " + m_currentMotion);
 
         switch(m_currentMotion)
         {
             case Motion.Idle:
+                IsDbl();            //더블(연속)클릭 판정 (회피 판정)
                 break;
             case Motion.Avoid:
                 //if(animatorCtrl.MotionEnd("avoid"))    //애니메이션 재생이 끝났다면
@@ -158,6 +173,7 @@ public class PlayerCtrl : MonoBehaviour
                 //}
                 break;
             case Motion.Move:
+                IsDbl();            //더블(연속)클릭 판정 (회피 판정)
                 break;
             case Motion.InputAttack:
                 MouseJudgment();
@@ -166,7 +182,7 @@ public class PlayerCtrl : MonoBehaviour
                 //콥보어택 딜레이 타임
                 if(animatorCtrl.MotionEnd("attack"))    //애니메이션 재생이 끝났다면
                 {
-                    //isAttack = false;
+                    isAttackAble = true;
                     combodelay = comboTime;
                     m_currentMotion = Motion.AfterAttack;
                     Debug.Log("공격 모션 끝!");
@@ -175,20 +191,62 @@ public class PlayerCtrl : MonoBehaviour
             case Motion.HoldAttack:
                 if(animatorCtrl.MotionEnd("hold"))    //애니메이션 재생이 끝났다면
                 {
+                    isAttackAble = true;
                     Debug.Log("홀드 공격 모션 끝!");
                     m_currentMotion = Motion.Idle;
                 }                
                 break;
             case Motion.AfterAttack:
+                IsDbl();            //더블(연속)클릭 판정 (회피 판정)
                 ComboJudgment();
                 break;
         }
+
+        //화면 회전(마우스를 통한)은 여기서
+                
+        IsWheel();          //휠 클릭 판정
+
+        if(isAttackAble)
+        {
+            if(Input.GetMouseButtonDown(0))
+            {
+                mouse_l = true;
+            }
+            if(Input.GetMouseButtonDown(1))
+            {
+                mouse_r = true;
+            }
+            if(mouse_l || mouse_r)
+            {
+                //이동 애니메이션을 정지 시킨다
+                for(int i = 0; i < 4; i++)
+                {
+                    animatorCtrl.Move(false,i);
+                }
+                if(mouse_r)
+                {
+                    isHold = true;
+                }
+                mouseDelay = mouseTime;                         //0.2초 기다려!
+                isAttackAble = false;
+                m_currentMotion = Motion.InputAttack;           //공격 입력 상태
+            }
+        }
+
+        if(Motioning())
+        {
+            return;
+        }
+
+        //플레이어의 이동을 위한 값은 미리 Update에서 받는다 +특정 모션 중이라면 입력받을 필요 없다.
+        h = Input.GetAxis("Horizontal");
+        v = Input.GetAxis("Vertical");
     }
 
     //마우스 판정 메소드
     private void MouseJudgment()        
     {
-        if(isMouseDownL || isMouseDownR)     //홀드 , 동시 클릭인지 판단
+        if(mouse_l || mouse_r)     //홀드 , 동시 클릭인지 판단
         {
             mouseDelay -= Time.deltaTime;
             if(Input.GetMouseButtonUp(1))       //도중에 마우스를 때면 홀드공격이 아니다.
@@ -197,28 +255,30 @@ public class PlayerCtrl : MonoBehaviour
             }
             if(Input.GetMouseButtonDown(0))     //좌클릭을 우클릭을 누르는동안 해도 홀드공격이 아니다
             {
-                isMouseDownL = true;
+                mouse_l = true;
                 isHold = false;
             }
             if(Input.GetMouseButtonDown(1))
             {
-                isMouseDownR = true;
+                mouse_r = true;
             }
         }
-        if(!isHold)             //홀드 공격이 아니다.
+        if(!isHold && mouseDelay <= 0)             //홀드 공격이 아니다.
         {
             m_currentMotion = Motion.Attack;
-            Attack(isMouseDownL, isMouseDownR);
-            isMouseDownL = false;
-            isMouseDownR = false;
-            return;
+            Attack(mouse_l,mouse_r);
+            mouse_l = false;
+            mouse_r = false;
+            isHold = false;
+            mouseDelay = mouseTime;
+            //return;
         }
         if(mouseDelay <= 0)     //홀드 공격이다.
         {
             m_currentMotion = Motion.HoldAttack;
             animatorCtrl.HoldAttack();
-            isMouseDownL = false;
-            isMouseDownR = false;
+            mouse_l = false;
+            mouse_r = false;
             isHold = false;
             mouseDelay = mouseTime;            
         }
@@ -226,9 +286,10 @@ public class PlayerCtrl : MonoBehaviour
 
     private void ComboJudgment()
     {
-        if(combodelay <= 0 || atkCount >= 2)         //콤보 딜레이가 0이거나, atkCount가 최대일 때 ☆ (공격 카운터가 몇인지 미정 수정필요)
+        Debug.Log("콤보 수 = " + atkCount + ", combodelay = " + combodelay);
+        if(combodelay <= 0)         //콤보 딜레이가 0이거나, atkCount가 최대일 때 ☆ (공격 카운터가 몇인지 미정 수정필요)
         {
-            //Debug.Log("콤보 시간 초과");
+            Debug.Log("콤보 시간 초과");
             atkCount = 0;
             m_currentMotion = Motion.Idle;
         }
@@ -238,45 +299,11 @@ public class PlayerCtrl : MonoBehaviour
 
     private void FixedUpdate()
     {
-        //화면 회전(마우스를 통한)은 여기서
-
-        if(Motioning())
+        if(Motioning())     //모션 중엔 작업할 필요 없다.
         {
             return;
         }
-
-
-        IsDbl();            //더블(연속)클릭 판정 (회피 판정)
-        IsWheel();          //휠 클릭 판정
-
-        float h = Input.GetAxis("Horizontal");
-        float v = Input.GetAxis("Vertical");
-
-        bool mouse_l = Input.GetMouseButtonDown(0);
-        bool mouse_r = Input.GetMouseButtonDown(1);
-
-        //마우스가 클릭되었다면
-        if(mouse_l || mouse_r)
-        {
-            //이동 애니메이션을 정지 시킨다
-            for(int i = 0; i < 4; i++)
-            {
-                animatorCtrl.Move(false,i);
-            }
-
-            if(mouse_r)
-            {
-                isHold = true;
-                isMouseDownR = true;
-            }
-            if(mouse_l)
-            {
-                isMouseDownL = true;
-            }
-            mouseDelay = mouseTime;                         //0.5초 기다려!
-            m_currentMotion = Motion.InputAttack;           //공격 입력 상태
-        }
-        else if(h != 0 || v != 0)            //공격중이 아닐 때, 움직이는 판정을 적용한다
+        if(h != 0 || v != 0)            //공격중이 아닐 때, 움직이는 판정을 적용한다
         {
             m_currentMotion = Motion.Move;
             if(targetObj == null)       //타겟팅이 된 오브젝트가 없다
@@ -284,13 +311,15 @@ public class PlayerCtrl : MonoBehaviour
                 if(mCam != null)
                 {
                     //Debug.Log("h = " + h + ", v = " + v);
-                    //cam_rot가 맞나????
-                    cam_move = Vector3.Scale(mCam.forward,new Vector3(1,0,1)).normalized;       //카메라가 위에 있어서 1,0,1을 곱한건가?
-                    move = v * cam_move + h * mCam.right;
+                    //>>>해당 부분은 Transform을 이용한 이동 방법
+                    /*
+                     * cam_move = Vector3.Scale(mCam.forward,new Vector3(1,0,1)).normalized;       //카메라가 위에 있어서 1,0,1을 곱한건가?
+                     * move = v * cam_move + h * mCam.right;
+                     */
                 }
                 else                    //카메라가 없을 때
                 {
-                    move = v * Vector3.forward + h * Vector3.right;
+                    //>>>move = v * Vector3.forward + h * Vector3.right;
                 }                
             }
             else                        //타겟팅이 된 오브젝트가 있다. (원운동)
@@ -300,26 +329,37 @@ public class PlayerCtrl : MonoBehaviour
                     transform.RotateAround(targetObj.transform.position,Vector3.down,h);                    //원운동 속도 제어는 여기서
                     transform.LookAt(targetObj.transform.position);
                     //Debug.Log("h = " + h + ", v = " + v);
+
+                    //>>>Transform을 이용한 이동 방법
+                    /*
+                     * Vector3 cam_way = Vector3.Scale(mCam.forward,new Vector3(1,0,1)).normalized;
+                     * move = v * cam_way;                                                                   //앞뒤 속도 제어는 여기서
+                     * //Debug.Log(move);
+                     */
                     
-                    Vector3 cam_way = Vector3.Scale(mCam.forward,new Vector3(1,0,1)).normalized;
-                    move = v * cam_way;                                                                   //앞뒤 속도 제어는 여기서
-                    //Debug.Log(move);
+
                 }
                 else                    //카메라가 없을 때
                 {
                     transform.RotateAround(targetObj.transform.position,Vector3.down,h);
                     transform.LookAt(targetObj.transform.position);
-                    move = v * Vector3.forward;     //아마 오류
+                    //>>>move = v * Vector3.forward;     //아마 오류
                     //move = new Vector3(targetObj_pos.x + Mathf.Sin(h),move_pos.y,targetObj_pos.z + Mathf.Cos(h));
                     //move = new Vector3(targetObj_pos.x + distance * Mathf.Cos(Mathf.Atan(distance/h)),move_pos.y,targetObj_pos.z + distance * Mathf.Sin(Mathf.Atan(distance/h)));
                     //move = v * Vector3.forward + Mathf.Cos(h) * distance * Vector3.right + Mathf.Sin(h) * distance * Vector3.right;
                 }
             }
-            mTrans.position += move * speed;
+            //>>>mTrans.position += move * speed;
+            //Rigidbody를 이용한 이동방법.
+            movement.Set(h,0f,v);
+            movement = movement.normalized * speed * Time.deltaTime;
+            mRigid.MovePosition(mTrans.position + movement);
+
 
             if(h != 0)
             {
                 animatorCtrl.Move(true,h < 0 ? 0 : 1);               //0 = 좌, 1 = 우
+                animatorCtrl.Move(false,h < 0 ? 1 : 0);               //0 = 좌, 1 = 우
             }
             else
             {
@@ -329,6 +369,7 @@ public class PlayerCtrl : MonoBehaviour
             if(v != 0)
             {
                 animatorCtrl.Move(true,v > 0 ? 2 : 3);               //2 = 앞, 3 = 뒤
+                animatorCtrl.Move(false,v > 0 ? 3 : 2);               //0 = 좌, 1 = 우
             }
             else
             {
@@ -346,7 +387,8 @@ public class PlayerCtrl : MonoBehaviour
             }
         }
         else
-        {            
+        {
+            m_currentMotion = Motion.Idle;
             for(int i = 0; i < 4; i++)
             {
                 animatorCtrl.Move(false,i);
@@ -356,7 +398,7 @@ public class PlayerCtrl : MonoBehaviour
     }
     private bool Motioning()
     {
-        if(m_currentMotion == Motion.Attack || m_currentMotion == Motion.Avoid || m_currentMotion == Motion.InputAttack)     //공격중, 회피중, 공격입력중에는 다른 모션을 취할 수 없음.
+        if(m_currentMotion == Motion.Attack || m_currentMotion == Motion.Avoid || m_currentMotion == Motion.InputAttack || m_currentMotion == Motion.AfterAttack)     //공격중, 회피중, 공격입력중에는 다른 모션을 취할 수 없음.
         {
             return true;
         }
@@ -372,7 +414,7 @@ public class PlayerCtrl : MonoBehaviour
     {
         //애니메이션이 끝나기 직전~Combodelay 사이에 시간에 입력을 받음
 
-        combodelay = comboTime;
+        //combodelay = comboTime;
         //isAttack = true;
         Debug.Log("atkCount : " + atkCount);
         Debug.Log("left = " + mouseL + ", right = " + mouseR);
