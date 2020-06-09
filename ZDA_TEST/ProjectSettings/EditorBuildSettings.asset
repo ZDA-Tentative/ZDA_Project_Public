@@ -1,0 +1,44 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/FilmSampleV1/001/001_main.unity
+    guid: 001ee772bd59f3c47add5e0fd61fd291
+  - enabled: 1
+    path: Assets/Scenes/FilmSampleV1/001/001_timeline.unity
+    guid: 231d3e8cd4da4fd47be188c2abbed522
+  - enabled: 1
+    path: Assets/Scenes/FilmSampleV1/001/Sets/001_episode_set.unity
+    guid: 0ff44af7337015f4aad8677ae605d730
+  - enabled: 1
+    path: Assets/Scenes/FilmSampleV1/001/Sets/001_episode_set_lighting.unity
+    guid: 9a7131045aded7344b87a7e8db4e3d00
+  - enabled: 1
+    path: Assets/Scenes/EmptySeries/001/001_main.unity
+    guid: 68de582d6ecd89646a62e0d1fb9fbf68
+  - enabled: 1
+    path: Assets/Scenes/EmptySeries/001/001_timeline.unity
+    guid: 77b20e61fb18eee4b8d43c55808ed21a
+  - enabled: 1
+    path: Assets/Scenes/EmptySeries/001/Sets/001_episode_set.unity
+    guid: f80492a0ca50287488e3abad3edf653b
+  - enabled: 1
+    path: Assets/Scenes/EmptySeries/001/Sets/001_episode_set_lighting.unity
+    guid: 7c6b348432cb8454381ae0aca9b54b91
+  - enabled: 1
+    path: Assets/Scenes/Tutorials/CinemachineComposerBlending.unity
+    guid: 765435a695273594ea5d7adf73fb9e61
+  - enabled: 1
+    path: Assets/Scenes/Tutorials/CinemachineDollyTrack.unity
+    guid: c3606c005d082d146805490c292c5258
+  - enabled: 1
+    path: Assets/Scenes/Tutorials/Timeline_SimpleShotBlocking.unity
+    guid: 00b124902bbf04743a6df405c4f13853
+  - enabled: 1
+    path: Assets/Scenes/LookDev/CharacterInventory.unity
+    guid: 95c2c0c20bddd2548bfc725783172ed2
+  m_configObjects: {}
