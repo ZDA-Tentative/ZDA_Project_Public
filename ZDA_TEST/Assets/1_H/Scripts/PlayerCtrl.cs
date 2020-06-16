@@ -149,12 +149,12 @@ public class PlayerCtrl : MonoBehaviour
     private void Update()
     {
         CoolTime();
-        if(atkCount >= 2)
+        if(atkCount >= 2)               //이 부분은 최대 콤보 수를 const로 설정해야 한다.
         {
             atkCount = 0;
         }
 
-        Debug.Log("모션 : " + m_currentMotion);
+        //Debug.Log("모션 : " + m_currentMotion);
 
         switch(m_currentMotion)
         {
@@ -162,15 +162,15 @@ public class PlayerCtrl : MonoBehaviour
                 IsDbl();            //더블(연속)클릭 판정 (회피 판정)
                 break;
             case Motion.Avoid:
-                //if(animatorCtrl.MotionEnd("avoid"))    //애니메이션 재생이 끝났다면
-                //{
+                if(animatorCtrl.MotionEnd("avoid"))    //애니메이션 재생이 끝났다면
+                {
                     Debug.Log("회피 모션 끝!");
                     for(int i = 0; i < keycode.Length; i++)
                     {
                         OnValidateDbl(i);
                     }
                     m_currentMotion = Motion.Idle;
-                //}
+                }
                 break;
             case Motion.Move:
                 IsDbl();            //더블(연속)클릭 판정 (회피 판정)
@@ -202,6 +202,7 @@ public class PlayerCtrl : MonoBehaviour
                 break;
         }
 
+        PlayerCameraCtrl();
         //화면 회전(마우스를 통한)은 여기서
                 
         IsWheel();          //휠 클릭 판정
@@ -502,7 +503,8 @@ public class PlayerCtrl : MonoBehaviour
 
     private void AvoidAnimation(int direction)          //회피 애니메이션
     {
-        //animatorCtrl.Avoid(true, direction);
+
+        animatorCtrl.Avoid(direction);
         string direc = "에러";
         if(direction == 0)
         {
@@ -521,7 +523,26 @@ public class PlayerCtrl : MonoBehaviour
             direc = "뒤";
         }
         Debug.Log("회피 : " + direc);
-        //animatorCtrl.Avoid(false, direction);
+        
+    }
+
+    private void PlayerCameraCtrl()                 
+    {
+        //마우스를 통해 캐릭터를 회전시키면, mCam은 돌아가지만, mTrans는 돌아가지 않아야 함.
+        //mTrans는 mCam과의 사이각이 ()이상 차이나면 mCam과 일치하게 한다.
+        float sheta = mCam.rotation.y - mTrans.rotation.y;
+        Vector3 camVector = new Vector3(mCam.forward.x, 0, mCam.forward.z);
+        Vector3 playerVector = new Vector3(mTrans.forward.x,0,mTrans.forward.z);
+
+        //float Dot = Vector3.Dot(playerVector,camVector);
+        //float sheta = Mathf.Acos(Dot);
+        //float sheta = Quaternion.FromToRotation(Vector3.up,camVector - playerVector).eulerAngles.z;
+        //Vector3 v = camVector - playerVector;
+        //float sheta = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
+            
+        Debug.Log("카메라-플레이어 사이각 : " + sheta);
+        Debug.DrawRay(mCam.position,camVector * 10,Color.blue);
+        Debug.DrawRay(mTrans.position,playerVector * 10,Color.red);
     }
 
     private GameObject Targeting()

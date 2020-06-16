@@ -75,7 +75,11 @@ public class PlayerAnimatorCtrl : MonoBehaviour
                 
                 break;
         }
-        
+
+        if(motionName == "avoid")
+        {
+            mAnimator.SetBool("avoided",false);
+        }
 
         return isMotion;
     }
@@ -86,8 +90,9 @@ public class PlayerAnimatorCtrl : MonoBehaviour
         mAnimator.SetTrigger("holdAttack");
     }
 
-    internal void Avoid(bool avoiding, int direction)
+    internal void Avoid(int direction)
     {
-        mAnimator.SetBool("avoid" + direction, avoiding);
+        mAnimator.SetTrigger("avoid" + direction);
+        mAnimator.SetBool("avoided",true);
     }
 }
