@@ -30,7 +30,23 @@ public class Sc_Boss : MonoBehaviour
     public const float SKILLCHECK_HP = 0.2f;            // 보스 특수 스킬 쓸 hp 퍼센트 외부 입력값
     private float skillCheck_HpChecker = 0;             // 보스 특수 스킬 쓸 hp 퍼센트 비율 적용
 
-    public bool isAnimationOver = false;                       // 애니메이션 끝났을 때 이벤트 함수로 인해 True가 됨.
+    
+    private bool isAnimationOver = false;                // 애니메이션 끝났을 때 이벤트 함수로 인해 True가 됨.
+    /// <summary>
+    /// 애니메이션이 끝나면 True, 애니메이션이 시작되면 false. 아직 자동으로는 처리는 안됨 따라서 추후 False 처리 해줘야 함.
+    /// </summary>
+    public bool IsAnimationOver
+    {
+        get
+        {
+            return isAnimationOver;
+        }
+        set
+        {
+            //StartCoroutine(StartTimer(1));
+               
+        }
+    }
 
     public Sc_BossMoveAI sc_BossMoveAi;                 // AI로 움직이는 스크립트 
     public Sc_EnemyAttack sc_EnemyAttack;               // 공격 패턴 스크립트 
@@ -83,10 +99,26 @@ public class Sc_Boss : MonoBehaviour
 
         ws = new WaitForSeconds(0.3f);
     }
+
+    IEnumerator StartTimer(float maxTime)
+    {
+        float currentTIme = 0;
+        while(currentTIme <= maxTime)
+        {
+            currentTIme += Time.deltaTime;
+            Debug.Log("타이머 : " + currentTIme);
+            yield return null;
+        }
+        if(maxTime <= currentTIme)
+        {
+            StopCoroutine("StartCoroutine");
+        }
+
+    }
     void Start()
     {
-       
 
+    
 
     }
     //초기화 
@@ -128,15 +160,16 @@ public class Sc_Boss : MonoBehaviour
         while (isPlayerAlive)
         {
             yield return null;
-            // == anitime Start == 
 
-            // 죽음 상태로 진입 체크
+// == anitime Start == 
+
+        // 죽음 상태로 진입 체크
             if (hp_Current <= 0)
             {
                 bossState = BossState.die;
                 yield break;
             }
-            // 특수 스킬 상태로 진입 체크 
+        // 특수 스킬 상태로 진입 체크 
 
             // hp 100 100 < 0.2
             if (hp_Current < skillCheck_HpChecker)
@@ -151,6 +184,11 @@ public class Sc_Boss : MonoBehaviour
 
 // == anitime End == 
 
+            if(sc_EnemyAttack.IsAttackOver)
+            {
+                Debug.Log("공격 끝났음");
+                bossState = BossState.chase;
+            }
             
 
             float dist = Vector3.Distance(navMeshAgent.destination, transform.position);
@@ -203,12 +241,16 @@ public class Sc_Boss : MonoBehaviour
 
                 case BossState.attack:
                     // 실행
-                    sc_EnemyAttack.IsAttack = true;
+                    sc_EnemyAttack.IsAttack = true; // 공격을 시작한다. 
+                    sc_BossMoveAi.Stop();           // 공격할때는 움직이지 않는다. 
                     animator.SetTrigger(hash_Trigger_attack_trigger);
-                    animator.SetInteger(hash_attackIndex, (int)sc_EnemyAttack.boss_Attck_Pattern_Temp[0]);
-                    Attack();
+                    if(0 < sc_EnemyAttack.boss_Attck_Pattern_Temp.Count)
+                    {
+                        animator.SetInteger(hash_attackIndex, (int)sc_EnemyAttack.boss_Attck_Pattern_Temp[sc_EnemyAttack.ArrPointer]);
+                    }
+                    
 
-                    sc_BossMoveAi.Stop();
+                    
                     break;
 
                 case BossState.die:
@@ -240,10 +282,7 @@ public class Sc_Boss : MonoBehaviour
     }
 
  
-    void Attack()
-    {
-        
-    }
+
 
 
     void Die()
@@ -253,10 +292,12 @@ public class Sc_Boss : MonoBehaviour
 
 
 
-    // 애니메이션 이벤트 함수 
+    /// <summary>
+    /// 애니메이션이 끝나면 호출되게 설정할 수 있는 이벤트 함수
+    /// </summary>
     private void AniEvt_IsAnimationOver()
     {
-        Debug.Log(animator.GetCurrentAnimatorClipInfo(0)+" 애니메이션 끝.");
-        isAnimationOver = true;
+        Debug.Log(" 애니메이션 끝.");
+        IsAnimationOver = true;
     }
 }

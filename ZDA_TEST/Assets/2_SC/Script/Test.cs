@@ -4,15 +4,12 @@ using UnityEngine;
 
 public class Test : MonoBehaviour
 {
-    public static Test instance = null;
 
-    public int a = 0;
+    
     private void Awake()
     {
-        if(instance == null)
-        {
-            instance = this;
-        }
+        Debug.Log("게임");
+        
     }
     void Start()
     {

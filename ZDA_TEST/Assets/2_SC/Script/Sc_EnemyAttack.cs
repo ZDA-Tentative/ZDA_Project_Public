@@ -11,16 +11,25 @@ using UnityEngine;
 public class Sc_EnemyAttack : MonoBehaviour
 {
 
-    // 이 패턴의 int 값과 애니메이션 진입 값이 같아야한다.
+    const int NOMAL_PATTERN_LENGTH = 5;
+    const int PATTERN_LENGTH = 8;
+    /// <summary>
+    /// 애니메이션 패턴, 이 패턴의 int 값과 애니메이션 진입 값이 같아야한다.
+    /// </summary>
     public enum Boss_AttackPattern
     {
-        prick =0 , //찌르기
-        vertical_Cutting = 1, // 종베기
-        horizontal_Cutting =2, // 횡베기
-        rush = 3, // 돌진 
-        special_Skills, // 특수공격
-        backstep // 백스탭
+        up_Cutting = 0,                         // 위로 베어 올리기
+        down_Cutting = 1,                       // 아래로 베어 내리기
+        horizontal_Cutting = 2,                 // 횡베기
+        both_sides_down_Cutting = 3,            // 양쪽베기
+        degree_360_Cutting = 4 ,                // 360도 베기
+        Kick = 5,                               // 킥
+
+        down_Skills = 6,                        // 내려찍기 특수공격
+        combo1_Skills = 7,                      // 콤보1 특수공격 
+        combo2_Skills = 8,                      // 콤보2 특수공격
     }
+    
 
 
     public Sc_Boss sc_Boss;
@@ -30,6 +39,22 @@ public class Sc_EnemyAttack : MonoBehaviour
     int aniCurrentCounter = 0;
     int aniCounter = 4; // 
 
+    int arrPointer;
+    public int ArrPointer
+    {
+        get { return arrPointer; }
+        set
+        {
+            arrPointer = value;
+            if(100 <= arrPointer )
+            {
+                arrPointer = 0;
+            }
+            
+        }
+    }
+
+   
 
     public List<Boss_AttackPattern> boss_Attck_Pattern_Temp = new List<Boss_AttackPattern>(); // 스킬 패턴 Temp
   
@@ -44,51 +69,95 @@ public class Sc_EnemyAttack : MonoBehaviour
     List<Boss_AttackPattern> boss_AttacksPattern_6 = new List<Boss_AttackPattern>();
 
     private bool isAttack = false;
+    private bool isTryPattern = false;
+    public bool IsAttackOver
+    {
+        get
+        {
+            return isTryPattern;
+        }
+    }
+
     public bool IsAttack
     {
         get { return isAttack; }
         set
         {
             isAttack = value;
+            //CasePatternAttack();
+            RndAttack();
+        }
+    }
 
-            if(isAttack)
+    
+    /// <summary>
+    /// 단순 랜덤으로 공격하는 패턴
+    /// </summary>
+    public void RndAttack()
+    {
+        if(isAttack)
+        {
+            // 초기화,랜덤 패턴을 먼저 넣는다.
+            if (boss_Attck_Pattern_Temp.Count <= 1)
+            {
+                
+            }
+            if (sc_Boss.IsAnimationOver)
+            {
+                ArrPointer++;
+                sc_Boss.IsAnimationOver = false;
+                isTryPattern = true;
+                Debug.Log("공격 애니메이션 하나 완료: " + boss_Attck_Pattern_Temp.Count);
+            }
+        }
+        
+    }
+
+    /// <summary>
+    /// 케이스로 공격하는 패턴
+    /// </summary>
+    public void CasePatternAttack() // 아직 버그가 있음
+    {
+        if (isAttack)
+        {
+            // Chase 로 상태 전이 함 //
+            //if (boss_Attck_Pattern_Temp.Count <= 0 && isTryPattern)
+            //{
+            //    Debug.Log("CHase 로 상태전이 함.");
+
+
+            //}
+
+
+
+            // 애니메이션 한 케이스 끝나기 전 까지
+            if (sc_Boss.IsAnimationOver && 0 < boss_Attck_Pattern_Temp.Count)
+            {
+                boss_Attck_Pattern_Temp.RemoveAt(0);
+                sc_Boss.IsAnimationOver = false;
+                isTryPattern = true;
+                Debug.Log("공격 애니메이션 하나 완료: " + boss_Attck_Pattern_Temp.Count);
+            }
+            // 맨 처음 패턴 불러오기 및 초기화 
+            if (boss_Attck_Pattern_Temp.Count <= 0)
             {
 
+                isTryPattern = false; // 패턴 케이스 한번 돌았음
+                                      // 공격하니까 멈추기
+                sc_BossMoveAI.agent.ResetPath();
+                // 패턴 랜덤으로 지정
+                int skillMaxNum = bossAttackPatternArr.Length;
+                aniRandIndex = Random.Range(0, skillMaxNum);
 
-                // Chase 로 상태 전이 함 
-                if (boss_Attck_Pattern_Temp.Count <= 0 &&
-                    aniCounter <= aniCurrentCounter)
+                for (int i = 0; i < bossAttackPatternArr[aniRandIndex].Count; i++)
                 {
-
+                    // 애니메이션 템프에 call by value 복사 
+                    boss_Attck_Pattern_Temp.Add(bossAttackPatternArr[aniRandIndex][i]);
+                    Debug.Log(aniRandIndex + "번째 보스 패턴: " + (int)boss_Attck_Pattern_Temp[i] + " : " + boss_Attck_Pattern_Temp[i].ToString());
                 }
-
-                // 맨 처음 패턴 불러오기 및 초기화 
-                if (boss_Attck_Pattern_Temp.Count <= 0)
-                {
-                    // 공격하니까 멈추기
-                    sc_BossMoveAI.agent.ResetPath();
-                    // 패턴 랜덤으로 지정
-                    int skillMaxNum = bossAttackPatternArr.Length; // @이거 왜 안되냐
-                    aniRandIndex = Random.Range(0, skillMaxNum);
-
-                    for (int i = 0; i < bossAttackPatternArr[aniRandIndex].Count; i++) // AnimationRan
-                    {
-                        boss_Attck_Pattern_Temp.Add(bossAttackPatternArr[aniRandIndex][i]);
-                        Debug.Log(aniRandIndex+"번째 보스 패턴: " + (int)boss_Attck_Pattern_Temp[i]+" : " + boss_Attck_Pattern_Temp[i].ToString()  );
-                    }
-                    aniCounter = boss_Attck_Pattern_Temp.Count;
-                    Debug.Log("공격 애니메이션 초기화 완료");
-                }
-
-                // 애니메이션 하나 끝났다면 
-                if (sc_Boss.isAnimationOver && 0 < boss_Attck_Pattern_Temp.Count)
-                {
-                    boss_Attck_Pattern_Temp.RemoveAt(0);
-                    sc_Boss.isAnimationOver = false;
-                    aniCurrentCounter++;
-                }
+                aniCounter = boss_Attck_Pattern_Temp.Count;
+                Debug.Log("공격 애니메이션 초기화 완료 : " + isTryPattern);
             }
-            
         }
     }
     private void Awake()
@@ -101,12 +170,21 @@ public class Sc_EnemyAttack : MonoBehaviour
     {
         for (int i = 0; i < bossAttackPatternArr[0].Count; i++)
         {
-            Debug.Log("초기화 : " + bossAttackPatternArr[0][i].ToString());
+            Debug.Log("애니메이션 패턴 초기화 : " + bossAttackPatternArr[0][i].ToString());
         }
         Debug.Log("배열 크기 : " + bossAttackPatternArr.Length);
+
+        // Rand일때 boss_Attck_Pattern_Temp 초기화한다.
+        for (int i = 0; i < 100; i++)
+        {
+            int rndTemp = Random.Range(0, NOMAL_PATTERN_LENGTH);
+            // 
+            boss_Attck_Pattern_Temp.Add((Boss_AttackPattern)rndTemp);
+        }
     }
 
     // Update is called once per frame
+
     void Update()
     {
 
@@ -118,7 +196,9 @@ public class Sc_EnemyAttack : MonoBehaviour
     }
     void Attack()
     {
+
         Debug.Log("attack:");
+
         // 시각화 
         //Debug.DrawRay(transform.position, (navMeshAgent.destination - transform.position).normalized, Color.red);
 
@@ -129,7 +209,7 @@ public class Sc_EnemyAttack : MonoBehaviour
 
         if (false)
         {
-         
+        
         }
     }
 
@@ -153,34 +233,16 @@ public class Sc_EnemyAttack : MonoBehaviour
         //boss_AttacksPattern_1.Add(Boss_AttackPattern.vertical_Cutting);
 
         
-
+        // 이런식으로 초기화 시켜주면 된다.
         StateAdd(boss_AttacksPattern_0,
-            Boss_AttackPattern.rush, Boss_AttackPattern.prick,
-            Boss_AttackPattern.prick, Boss_AttackPattern.horizontal_Cutting);
+            Boss_AttackPattern.down_Cutting, Boss_AttackPattern.horizontal_Cutting,
+            Boss_AttackPattern.Kick, Boss_AttackPattern.degree_360_Cutting);
 
         StateAdd(boss_AttacksPattern_1,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
+            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.down_Cutting,
+            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.Kick);
         // 이 아래부터는 패턴 다 똑같음 추후 기획팀이 수정 
-        StateAdd(boss_AttacksPattern_2,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
-
-        StateAdd(boss_AttacksPattern_3,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
-
-        StateAdd(boss_AttacksPattern_4,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
-
-        StateAdd(boss_AttacksPattern_5,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
-
-        StateAdd(boss_AttacksPattern_6,
-            Boss_AttackPattern.rush, Boss_AttackPattern.vertical_Cutting,
-            Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.vertical_Cutting);
+        
 
 
 
