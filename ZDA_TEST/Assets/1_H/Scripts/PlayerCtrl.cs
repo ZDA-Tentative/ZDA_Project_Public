@@ -30,11 +30,14 @@ public class PlayerCtrl : MonoBehaviour
     private float mouseWheeling = 0.1f;
     private bool isWheel = false;                   //휠 굴리는 중이냐?
     private bool isHold = false;                    //홀딩중이냐?
-    private float combodelay = 0.5f;                       //콤보 딜레이
-    private int atkCount = 0;                       //공격 횟수
+    private float combodelay = 0.5f;                //콤보 딜레이    
     private float mouseTime = 0.2f;
     private float mouseDelay;                       //마우스가 홀딩이냐 동시클릭이냐?
     private bool isAttackAble = true;
+
+    private int atkTotalCount = 0;                  //전체 공격 횟수
+    private int atkLeftCount = 0;                   //좌클릭 공격 횟수
+    private int atkRightCount = 0;                  //우클릭 공격 횟수
 
 
     public Vector3 ch_pos           //플레이어의 위치값
@@ -93,6 +96,7 @@ public class PlayerCtrl : MonoBehaviour
         Move,
         InputAttack,        //공격 입력중
         Attack,
+        HoldAttackFake,     //임시 변수명, (홀드 어택이 3가지 모션으로 바뀌면 삭제)
         HoldAttack,
         AfterAttack,        //공격이 끝난후
     }
@@ -149,10 +153,6 @@ public class PlayerCtrl : MonoBehaviour
     private void Update()
     {
         CoolTime();
-        if(atkCount >= 2)               //이 부분은 최대 콤보 수를 const로 설정해야 한다.
-        {
-            atkCount = 0;
-        }
 
         //Debug.Log("모션 : " + m_currentMotion);
 
@@ -184,7 +184,7 @@ public class PlayerCtrl : MonoBehaviour
                 {
                     isAttackAble = true;
                     combodelay = comboTime;
-                    m_currentMotion = Motion.AfterAttack;
+                    m_currentMotion = atkTotalCount == 0 ? Motion.Idle : Motion.AfterAttack;        //콤보 공격이 끝났다면 대기상태, 콤보 중이라면 콤보조작 대기 상태
                     Debug.Log("공격 모션 끝!");
                 }
                 break;
@@ -196,11 +196,20 @@ public class PlayerCtrl : MonoBehaviour
                     m_currentMotion = Motion.Idle;
                 }                
                 break;
+            case Motion.HoldAttackFake:
+                if(animatorCtrl.MotionEnd("holdFake"))    //애니메이션 재생이 끝났다면
+                {
+                    isAttackAble = true;
+                    Debug.Log("홀드Fake 공격 모션 끝!");
+                    m_currentMotion = Motion.Idle;
+                }
+                break;
             case Motion.AfterAttack:
                 IsDbl();            //더블(연속)클릭 판정 (회피 판정)
                 ComboJudgment();
                 break;
         }
+        //Debug.Log("L : " + mouse_l + ", R : " + mouse_r + ", hold : " + isHold);
 
         PlayerCameraCtrl();
         //화면 회전(마우스를 통한)은 여기서
@@ -224,10 +233,6 @@ public class PlayerCtrl : MonoBehaviour
                 {
                     animatorCtrl.Move(false,i);
                 }
-                if(mouse_r)
-                {
-                    isHold = true;
-                }
                 mouseDelay = mouseTime;                         //0.2초 기다려!
                 isAttackAble = false;
                 m_currentMotion = Motion.InputAttack;           //공격 입력 상태
@@ -247,51 +252,80 @@ public class PlayerCtrl : MonoBehaviour
     //마우스 판정 메소드
     private void MouseJudgment()        
     {
+        /*
         if(mouse_l || mouse_r)     //홀드 , 동시 클릭인지 판단
-        {
-            mouseDelay -= Time.deltaTime;
-            if(Input.GetMouseButtonUp(1))       //도중에 마우스를 때면 홀드공격이 아니다.
+        {            
+            if(Input.GetMouseButtonUp(0))       //도중에 좌클릭을 때면 홀드공격이 아니다.
             {
                 isHold = false;
             }
-            if(Input.GetMouseButtonDown(0))     //좌클릭을 우클릭을 누르는동안 해도 홀드공격이 아니다
+            if(Input.GetMouseButtonUp(1))       //도중에 우클릭을 때면 홀드공격이 아니다.
+            {
+                isHold = false;
+            }
+            if(Input.GetMouseButtonDown(0))
             {
                 mouse_l = true;
-                isHold = false;
             }
             if(Input.GetMouseButtonDown(1))
             {
                 mouse_r = true;
             }
         }
-        if(!isHold && mouseDelay <= 0)             //홀드 공격이 아니다.
+        */
+        mouseDelay -= Time.deltaTime;
+
+        if(mouseDelay <= 0)
         {
-            m_currentMotion = Motion.Attack;
-            Attack(mouse_l,mouse_r);
-            mouse_l = false;
-            mouse_r = false;
-            isHold = false;
-            mouseDelay = mouseTime;
-            //return;
+            mouse_l = (mouse_l == true) ? mouse_l : Input.GetMouseButton(0);        //이미 입력이 true라면 true
+            mouse_r = (mouse_r == true) ? mouse_r : Input.GetMouseButton(1);        
+            if(mouse_l && mouse_r)            //동시 클릭이라면
+            {
+                isHold = true;
+            }
+
+            /*if(isHold == false && (mouse_l && mouse_r))         //홀드 공격은 아닌데, 동시클릭 입력을 받았다
+            {
+                m_currentMotion = Motion.HoldAttackFake;
+                animatorCtrl.HoldAttackFake();
+                mouse_l = false;
+                mouse_r = false;
+                isHold = false;
+                return;
+            }*/
+            if(isHold == false)                                 //홀드 공격이 아니다.
+            {
+                m_currentMotion = Motion.Attack;
+                Attack(mouse_l,mouse_r);
+                mouse_l = false;
+                mouse_r = false;
+                isHold = false;
+                return;
+            }
+            if(isHold == true)                                  //홀드 공격이다.
+            {
+                m_currentMotion = Motion.HoldAttack;
+                animatorCtrl.HoldAttack();
+                mouse_l = false;
+                mouse_r = false;
+                isHold = false;
+                atkTotalCount = 0;
+                atkLeftCount = 0;
+                atkRightCount = 0;
+            }
         }
-        if(mouseDelay <= 0)     //홀드 공격이다.
-        {
-            m_currentMotion = Motion.HoldAttack;
-            animatorCtrl.HoldAttack();
-            mouse_l = false;
-            mouse_r = false;
-            isHold = false;
-            mouseDelay = mouseTime;            
-        }
+        
     }
 
     private void ComboJudgment()
     {
-        Debug.Log("콤보 수 = " + atkCount + ", combodelay = " + combodelay);
-        if(combodelay <= 0)         //콤보 딜레이가 0이거나, atkCount가 최대일 때 ☆ (공격 카운터가 몇인지 미정 수정필요)
+        //Debug.Log("콤보 수 = " + atkTotalCount + ", combodelay = " + combodelay);
+        if(combodelay <= 0)         //콤보 딜레이가 0이면 초기화
         {
-            Debug.Log("콤보 시간 초과");
-            atkCount = 0;
+            //Debug.Log("콤보 시간 초과");
+            atkTotalCount = 0;
+            atkLeftCount = 0;
+            atkRightCount = 0; 
             m_currentMotion = Motion.Idle;
         }
 
@@ -399,7 +433,7 @@ public class PlayerCtrl : MonoBehaviour
     }
     private bool Motioning()
     {
-        if(m_currentMotion == Motion.Attack || m_currentMotion == Motion.Avoid || m_currentMotion == Motion.InputAttack || m_currentMotion == Motion.AfterAttack)     //공격중, 회피중, 공격입력중에는 다른 모션을 취할 수 없음.
+        if(m_currentMotion == Motion.Attack || m_currentMotion == Motion.Avoid || m_currentMotion == Motion.InputAttack || m_currentMotion == Motion.AfterAttack || m_currentMotion == Motion.HoldAttack || m_currentMotion == Motion.HoldAttackFake)     //공격중, 회피중, 공격입력중에는 다른 모션을 취할 수 없음.
         {
             return true;
         }
@@ -413,13 +447,54 @@ public class PlayerCtrl : MonoBehaviour
 
     private void Attack(bool mouseL, bool mouseR)
     {
+        if(mouseL && mouseR)
+        {
+            return;
+        }
         //애니메이션이 끝나기 직전~Combodelay 사이에 시간에 입력을 받음
+        int atkCount = 0;
+        atkTotalCount++;
+        atkLeftCount++;     //좌클릭은 전체클릭과 동일하게 증가시켜도 상관 없음.
+         
+        if(atkTotalCount > 1 || mouseR)     //공격모션을 1회 끝마친 상태이다.
+        {
+            atkRightCount++;
+        }
+
+        if(atkRightCount == atkLeftCount)   //좌클릭, 우클릭 입력횟수가 같다면(우클릭을 먼저 했다면)
+        {
+            if(mouseL)                      //좌클릭이 안되는 상황에서 좌클릭을 했다면
+            {
+                atkTotalCount = 0;
+                atkLeftCount = 0;
+                atkRightCount = 0;
+                return;
+            }
+        }
 
         //combodelay = comboTime;
         //isAttack = true;
-        Debug.Log("atkCount : " + atkCount);
-        Debug.Log("left = " + mouseL + ", right = " + mouseR);
-        animatorCtrl.Attack(mouseL,mouseR,++atkCount);
+        //Debug.Log("atkTotalCount : " + atkTotalCount + ", LeftCount = " + atkLeftCount + ", RightCount = " + atkRightCount);
+        if(mouseL)
+        {
+            atkCount = atkLeftCount;
+            Debug.Log("LeftCount = " + atkLeftCount);
+        }
+        if(mouseR)
+        {
+            atkCount = atkRightCount;
+            Debug.Log("RightCount = " + atkRightCount);
+        }
+        
+        Debug.Log("atkCount = " + atkCount);
+        animatorCtrl.Attack(mouseL,mouseR,atkCount);
+
+        if(atkTotalCount >= 3 || atkRightCount >= 2)        //전체공격 횟수가 3번(좌클릭 3번, 우클릭 2번)이 넘었다면, 콤보 초기화 -> 애초에 좌클릭만 콤보가 되기 때문에 우클릭의 카운트가 3이상 될 수가 없다
+        {
+            atkTotalCount = 0;
+            atkLeftCount = 0;
+            atkRightCount = 0;
+        }
     }
 
     private void CoolTime()
@@ -530,9 +605,11 @@ public class PlayerCtrl : MonoBehaviour
     {
         //마우스를 통해 캐릭터를 회전시키면, mCam은 돌아가지만, mTrans는 돌아가지 않아야 함.
         //mTrans는 mCam과의 사이각이 ()이상 차이나면 mCam과 일치하게 한다.
-        float sheta = mCam.rotation.y - mTrans.rotation.y;
-        Vector3 camVector = new Vector3(mCam.forward.x, 0, mCam.forward.z);
-        Vector3 playerVector = new Vector3(mTrans.forward.x,0,mTrans.forward.z);
+        float sheta = mTrans.eulerAngles.y - mCam.eulerAngles.y;
+        //sheta값이 180보다 크다면, -360도를 해줄 필요가 있다 (-180~+180 회전값 반환을 위해)
+        sheta = sheta < 180 ? sheta : sheta - 360;
+        Vector3 camVector = new Vector3(mCam.forward.x, 0, mCam.forward.z);         //캠이 보는 방향(파란색)
+        Vector3 playerVector = new Vector3(mTrans.forward.x,0,mTrans.forward.z);    //캐릭터가 보는 방향(빨간색)
 
         //float Dot = Vector3.Dot(playerVector,camVector);
         //float sheta = Mathf.Acos(Dot);
@@ -540,7 +617,7 @@ public class PlayerCtrl : MonoBehaviour
         //Vector3 v = camVector - playerVector;
         //float sheta = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
             
-        Debug.Log("카메라-플레이어 사이각 : " + sheta);
+        //Debug.Log("카메라-플레이어 사이각 : " + sheta);
         Debug.DrawRay(mCam.position,camVector * 10,Color.blue);
         Debug.DrawRay(mTrans.position,playerVector * 10,Color.red);
     }
