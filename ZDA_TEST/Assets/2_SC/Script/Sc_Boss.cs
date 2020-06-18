@@ -23,7 +23,7 @@ public class Sc_Boss : MonoBehaviour
 
     public const int HP_MAX = 100;                      // 보스 max hp 
     private int hp_Current = 0;                         // 보스 현재 hp
-    public Animator animator;                                  // 애니메이션
+    Animator animator;                                  // 애니메이션
     Sc_GMng gameManager;                                // 게임매니저 인스턴스 
 
     [Range(0f,0.5f)]
@@ -43,9 +43,8 @@ public class Sc_Boss : MonoBehaviour
         }
         set
         {
-            isAnimationOver = value;
             //StartCoroutine(StartTimer(1));
-
+               
         }
     }
 
@@ -98,7 +97,7 @@ public class Sc_Boss : MonoBehaviour
         sc_BossMoveAi = GetComponent<Sc_BossMoveAI>();
         sc_EnemyAttack = GetComponent<Sc_EnemyAttack>();
 
-        ws = new WaitForSeconds(1f);
+        ws = new WaitForSeconds(0.3f);
     }
 
     IEnumerator StartTimer(float maxTime)
@@ -299,7 +298,6 @@ public class Sc_Boss : MonoBehaviour
     private void AniEvt_IsAnimationOver()
     {
         Debug.Log(" 애니메이션 끝.");
-        isAnimationOver = true;
+        IsAnimationOver = true;
     }
-
 }
