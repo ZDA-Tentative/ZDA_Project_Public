@@ -166,8 +166,12 @@ GameObject:
   m_Component:
   - component: {fileID: 3538142068011820076}
   - component: {fileID: 3664051993927363944}
-  - component: {fileID: 3664051993927363941}
   - component: {fileID: 3664051993927363942}
+  - component: {fileID: 1740031061}
+  - component: {fileID: 3664051993927363941}
+  - component: {fileID: 1740031066}
+  - component: {fileID: 1740031067}
+  - component: {fileID: 1740031068}
   m_Layer: 0
   m_Name: Enemy_Boss
   m_TagString: Untagged
@@ -206,27 +210,6 @@ CapsuleCollider:
   m_Height: 1
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &3664051993927363941
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 522796544272045631}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7162858368339e4da45527beca42794, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  bossState: 0
-  moveSpeed: 5
-  chaseDis: 3
-  patrolAreas: []
-  Waiting_for_battle_WaitTIme: 2
-  Waiting_for_battle_WaitTImeAdd: 1
-  waiting_for_battle: 0.2
-  target: {fileID: 0}
-  attackDis: 1
 --- !u!195 &3664051993927363942
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -249,6 +232,93 @@ NavMeshAgent:
   m_BaseOffset: -0.01
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!95 &1740031061
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522796544272045631}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: 7390808afc7e1e242a53b990e1f4d90c, type: 3}
+  m_Controller: {fileID: 9100000, guid: 332c5b3aaa528ca44a6f84406b4c1f44, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &3664051993927363941
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522796544272045631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7162858368339e4da45527beca42794, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bossState: 0
+  sc_BossMoveAi: {fileID: 0}
+  sc_EnemyAttack: {fileID: 0}
+  isPlayerAlive: 1
+  moveSpeed: 10.22
+  navMeshAgent: {fileID: 3664051993927363942}
+  chaseDis: 2
+  Waiting_for_battle_WaitTIme: 2
+  Waiting_for_battle_WaitTImeAdd: 1
+  waiting_for_battle: 0.2
+  target: {fileID: 0}
+  attackDis: 1
+  testMat: {fileID: 2100000, guid: 4cbdf90db8e27ee40bf6a4b8af6b725c, type: 2}
+--- !u!114 &1740031066
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522796544272045631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e3d37c5e14a6f4d4293a2890ecbf7473, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wayPoints: []
+  nextWayIdx: 0
+  agent: {fileID: 0}
+--- !u!114 &1740031067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522796544272045631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f68a54b82583844b92a6aefeebc0ffc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sc_Boss: {fileID: 0}
+  sc_BossMoveAI: {fileID: 0}
+  boss_Attck_Pattern_Temp: 
+--- !u!114 &1740031068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 522796544272045631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0b148fe25e99eb48b9724523833bab1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Delegates: []
 --- !u!1 &538442286698734170
 GameObject:
   m_ObjectHideFlags: 0
@@ -1888,7 +1958,7 @@ SkinnedMeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2541457280464432744, guid: 7390808afc7e1e242a53b990e1f4d90c, type: 3}
+  - {fileID: 2100000, guid: 4cbdf90db8e27ee40bf6a4b8af6b725c, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
