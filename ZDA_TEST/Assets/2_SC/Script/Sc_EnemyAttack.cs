@@ -11,8 +11,7 @@ using UnityEngine;
 public class Sc_EnemyAttack : MonoBehaviour
 {
 
-    const int NOMAL_PATTERN_LENGTH = 5;
-    const int PATTERN_LENGTH = 8;
+    
     /// <summary>
     /// 애니메이션 패턴, 이 패턴의 int 값과 애니메이션 진입 값이 같아야한다.
     /// </summary>
@@ -25,11 +24,12 @@ public class Sc_EnemyAttack : MonoBehaviour
         degree_360_Cutting = 4 ,                // 360도 베기
         Kick = 5,                               // 킥
 
-        down_Skills = 6,                        // 내려찍기 특수공격
-        combo1_Skills = 7,                      // 콤보1 특수공격 
-        combo2_Skills = 8,                      // 콤보2 특수공격
+        down_Skills = 100,                        // 내려찍기 특수공격
+        combo1_Skills = 101,                      // 콤보1 특수공격 
+        combo2_Skills = 102,                      // 콤보2 특수공격
     }
-    
+    const int NOMAL_PATTERN_LENGTH = 6;
+    const int PATTERN_LENGTH = 8;
 
 
     public Sc_Boss sc_Boss;
@@ -95,19 +95,21 @@ public class Sc_EnemyAttack : MonoBehaviour
     /// </summary>
     public void RndAttack()
     {
-        if(isAttack)
+
+        if (isAttack)
         {
-            // 초기화,랜덤 패턴을 먼저 넣는다.
-            if (boss_Attck_Pattern_Temp.Count <= 1)
-            {
-                
-            }
+            //Debug.Log("ani Time : " + sc_Boss.animator.GetCurrentAnimatorStateInfo(0).normalizedTime);
+            //if (sc_Boss.animator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 1f)
+            //{
+            //    Debug.Log("공격 애니메이션 하나 완료: ");
+            //}
+
             if (sc_Boss.IsAnimationOver)
             {
-                ArrPointer++;
+                arrPointer++;
                 sc_Boss.IsAnimationOver = false;
                 isTryPattern = true;
-                Debug.Log("공격 애니메이션 하나 완료: " + boss_Attck_Pattern_Temp.Count);
+                Debug.Log("공격 애니메이션 하나 완료: " + arrPointer);
             }
         }
         
@@ -164,22 +166,22 @@ public class Sc_EnemyAttack : MonoBehaviour
     {
         sc_Boss = GetComponent<Sc_Boss>();
         sc_BossMoveAI = GetComponent<Sc_BossMoveAI>();
-        AttackPattern();
+        // 케이스 랜덤 패턴일때 사용하는 생성함수
+        //AttackPattern();
     }
     void Start()
     {
-        for (int i = 0; i < bossAttackPatternArr[0].Count; i++)
-        {
-            Debug.Log("애니메이션 패턴 초기화 : " + bossAttackPatternArr[0][i].ToString());
-        }
-        Debug.Log("배열 크기 : " + bossAttackPatternArr.Length);
-
         // Rand일때 boss_Attck_Pattern_Temp 초기화한다.
         for (int i = 0; i < 100; i++)
         {
             int rndTemp = Random.Range(0, NOMAL_PATTERN_LENGTH);
             // 
             boss_Attck_Pattern_Temp.Add((Boss_AttackPattern)rndTemp);
+            
+        }
+        for (int i = 0; i < 100; i++)
+        {
+            Debug.Log("생성된 패턴 : [" + i + "]"+boss_Attck_Pattern_Temp[i].ToString());
         }
     }
 
@@ -241,7 +243,7 @@ public class Sc_EnemyAttack : MonoBehaviour
         StateAdd(boss_AttacksPattern_1,
             Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.down_Cutting,
             Boss_AttackPattern.horizontal_Cutting, Boss_AttackPattern.Kick);
-        // 이 아래부터는 패턴 다 똑같음 추후 기획팀이 수정 
+        // 이 아래부터는 패턴 다 똑같음 추후 기획팀이 수정하길 바람
         
 
 
@@ -255,6 +257,17 @@ public class Sc_EnemyAttack : MonoBehaviour
         bossAttackPatternArr[4] = boss_AttacksPattern_4;
         bossAttackPatternArr[5] = boss_AttacksPattern_5;
         bossAttackPatternArr[6] = boss_AttacksPattern_6;
+
+
+        // 애니메이션 패턴 초기화 
+
+        for (int i = 0; i < bossAttackPatternArr[0].Count; i++)
+        {
+            Debug.Log("애니메이션 패턴 초기화 : " + bossAttackPatternArr[0][i].ToString());
+        }
+        Debug.Log("배열 크기 : " + bossAttackPatternArr.Length);
+
+
     }
 
 
@@ -271,4 +284,6 @@ public class Sc_EnemyAttack : MonoBehaviour
         addList.Add(b);
         addList.Add(c);
     }
+
+
 }

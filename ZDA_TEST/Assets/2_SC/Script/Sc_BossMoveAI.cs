@@ -11,7 +11,7 @@ public class Sc_BossMoveAI : MonoBehaviour
     public int nextWayIdx;                 // 다음 순찰 지점 배열의 인덱스
 
     private readonly float patrolSpeed = 1.5f;
-    private readonly float traceSpeed = 4.0f;
+    private readonly float traceSpeed = 8.0f;
 
     //회전할 때의 속도를 조절하는 계수
     private float damping = 1.0f;
