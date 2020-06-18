@@ -35,19 +35,20 @@ public class PlayerAnimatorCtrl : MonoBehaviour
     }
 
     internal void Attack(bool atk_l, bool atk_r, int atk_num)
-    {
-        Debug.Log("attack" + atk_num);
+    {        
         if(atk_l && atk_r)
         {
-            mAnimator.SetTrigger("attack" + atk_num);
+            Debug.Log("동시클릭이잖아??");     //모션 없음
         }
         else if(atk_l)
         {
             mAnimator.SetTrigger("attackL" + atk_num);
+            Debug.Log("attackL" + atk_num);
         }
         else if(atk_r)
         {
             mAnimator.SetTrigger("attackR" + atk_num);
+            Debug.Log("attackR" + atk_num);
         }
     }
 
@@ -57,10 +58,14 @@ public class PlayerAnimatorCtrl : MonoBehaviour
         switch(motionName)
         {
             case "attack":
-                for(int i = 1; i < 3 && !isMotion; i++)
+                for(int i = 1; i <= 3 && !isMotion; i++)
                 {
-                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                    //isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
                     isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "L" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                    if(i == 3)
+                    {
+                        break;
+                    }
                     isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "R" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
                 }
                 break;
@@ -72,7 +77,6 @@ public class PlayerAnimatorCtrl : MonoBehaviour
                 break;
             default:                //공격 모션 이외에는 추가되는 변수명이 존재하지 않는다.
                 isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
-                
                 break;
         }
 
@@ -86,9 +90,16 @@ public class PlayerAnimatorCtrl : MonoBehaviour
 
     internal void HoldAttack()
     {
-        Debug.Log("홀딩 어택");
+        Debug.Log("홀드 어택");
         mAnimator.SetTrigger("holdAttack");
     }
+
+    internal void HoldAttackFake()
+    {
+        Debug.Log("홀드Fake 어택 출력");
+        mAnimator.SetTrigger("holdAttackFake");
+    }
+
 
     internal void Avoid(int direction)
     {
