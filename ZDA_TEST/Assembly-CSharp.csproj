@@ -184,6 +184,7 @@
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\OffMeshLinkJump.cs" />
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\PlayerController.cs" />
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\SimplePatrol.cs" />
+    <Compile Include="Assets\Asset\Mixamo\Melee Axe Pack\Demo\CameraScroll.cs" />
     <None Include="Assets\1_H\Standard Assets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
     <None Include="Assets\1_H\Standard Assets\Effects\Projectors\Shaders\ProjectorLight.shader" />
     <None Include="Assets\1_H\Standard Assets\Effects\Projectors\Shaders\ProjectorMultiply.shader" />
