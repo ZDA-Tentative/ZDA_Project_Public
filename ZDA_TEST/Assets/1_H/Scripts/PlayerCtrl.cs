@@ -19,25 +19,30 @@ public class PlayerCtrl : MonoBehaviour
     private float h, v;
     private Vector3 movement;
 
+    //딜레이 초기화 변수    
+    private const float doubleClickValue = 0.2f;    //더블 클릭 시간
+    private const float comboValue = 0.5f;          //콤보 입력을 받는 동안 기다리는 시간
+    private const float mouseWheelValue = 0.1f;     //휠 굴리는 시간(딜레이)
+    private const float inputMouseValue = 0.2f;     //마우스 입력 대기시간(동시클릭 판별)
 
-    bool mouse_l = false, mouse_r = false;
-    private float dblClickSpeed = 0.2f;             //더블 클릭 시간
-    private float wheelingSpeed = 0.1f;             //휠 굴리는 시간(딜레이)
-    private float comboTime = 0.5f;                 //콤보 입력을 받는 동안 기다리는 시간
     private KeyCode[] keycode = { KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.S };             //수정바람. (사용자가 입력한 키 일수도 있음)
+
+    //딜레이 시간 변수
+    Delay m_delay = new Delay(doubleClickValue,comboValue,mouseWheelValue,inputMouseValue);
     private float[] dblClick = new float[4];        //더블 클릭 시간 (왼쪽, 오른쪽, 앞, 뒤)
-    private bool[] isClick = new bool[4];           //클릭했냐? (왼쪽, 오른쪽, 앞, 뒤)
     private float mouseWheeling = 0.1f;
+    private float combodelay = 0.5f;                //콤보 딜레이        
+    private float mouseDelay;                       //마우스가 홀딩이냐 동시클릭이냐?
+
+    //입력 받을 수 있는지 체크하는 변수
+    private bool[] isClick = new bool[4];           //클릭했냐? (왼쪽, 오른쪽, 앞, 뒤)
     private bool isWheel = false;                   //휠 굴리는 중이냐?
     private bool isHold = false;                    //홀딩중이냐?
-    private float combodelay = 0.5f;                //콤보 딜레이    
-    private float mouseTime = 0.2f;
-    private float mouseDelay;                       //마우스가 홀딩이냐 동시클릭이냐?
+    bool mouse_l = false, mouse_r = false;
     private bool isAttackAble = true;
 
-    private int atkTotalCount = 0;                  //전체 공격 횟수
-    private int atkLeftCount = 0;                   //좌클릭 공격 횟수
-    private int atkRightCount = 0;                  //우클릭 공격 횟수
+    //현재 공격의 콤보 수
+    ComboAttack m_ComboAttack = new ComboAttack();
 
 
     public Vector3 ch_pos           //플레이어의 위치값
@@ -47,11 +52,6 @@ public class PlayerCtrl : MonoBehaviour
             return mTrans.position;
         }
     }   
-    /*public Vector3 move             //플레이어의 이동값
-     * {
-     *    get; private set;
-     * }
-     */
     public Vector3 ch_rot           //플레이어의 회전값
     {
         get
@@ -81,13 +81,6 @@ public class PlayerCtrl : MonoBehaviour
     {
         get; private set;
     }
-    /*public bool canJump
-    {
-        get
-        {
-            return 
-        }
-    }*/
 
     public enum Motion
     {
@@ -124,6 +117,7 @@ public class PlayerCtrl : MonoBehaviour
 
     void OnValidate()           //초기화
     {
+        //카메라 초기화
         if(Camera.main != null)
         {
             mCam = Camera.main.transform;
@@ -133,21 +127,31 @@ public class PlayerCtrl : MonoBehaviour
         {
             Debug.Log("No main Camera");
         }
+        //애니메이션 컨트롤 초기화
         if(animatorCtrl == null)
         {
             animatorCtrl = GetComponentInChildren<PlayerAnimatorCtrl>();            //InChildren? Can Kicker에서 확인하자
         }
+        //더블클릭 초기화
         for(int i = 0; i < keycode.Length; i++)
         {
             OnValidateDbl(i);
         }
-        //TargetObjs = GameObject.FindGameObjectsWithTag("Enemy");        //타겟이 가능한 오브젝트 집어넣기
-        
+        //콤보 수 초기화
+        OnValidateCombo();
+
+
     }
     void OnValidateDbl(int i)       //더블 클릭 초기화
     {
         isClick[i] = false;
-        dblClick[i] = dblClickSpeed;
+        dblClick[i] = doubleClickValue;
+    }
+    void OnValidateCombo()          //콤보 수 초기화
+    {
+        m_ComboAttack.Total = 0;
+        m_ComboAttack.Left = 0;
+        m_ComboAttack.Right = 0;
     }
 
     private void Update()
@@ -183,8 +187,8 @@ public class PlayerCtrl : MonoBehaviour
                 if(animatorCtrl.MotionEnd("attack"))    //애니메이션 재생이 끝났다면
                 {
                     isAttackAble = true;
-                    combodelay = comboTime;
-                    m_currentMotion = atkTotalCount == 0 ? Motion.Idle : Motion.AfterAttack;        //콤보 공격이 끝났다면 대기상태, 콤보 중이라면 콤보조작 대기 상태
+                    combodelay = comboValue;
+                    m_currentMotion = m_ComboAttack.Total == 0 ? Motion.Idle : Motion.AfterAttack;        //콤보 공격이 끝났다면 대기상태, 콤보 중이라면 콤보조작 대기 상태
                     Debug.Log("공격 모션 끝!");
                 }
                 break;
@@ -233,7 +237,7 @@ public class PlayerCtrl : MonoBehaviour
                 {
                     animatorCtrl.Move(false,i);
                 }
-                mouseDelay = mouseTime;                         //0.2초 기다려!
+                mouseDelay = inputMouseValue;                         //0.2초 기다려!
                 isAttackAble = false;
                 m_currentMotion = Motion.InputAttack;           //공격 입력 상태
             }
@@ -273,15 +277,28 @@ public class PlayerCtrl : MonoBehaviour
             }
         }
         */
+        if(m_ComboAttack.Total > 0)     //이미 전에 공격을 했다면, 동시클릭을 받을 필요가 없다.
+        {
+            mouseDelay = 0;     
+        }
+
         mouseDelay -= Time.deltaTime;
 
         if(mouseDelay <= 0)
         {
-            mouse_l = (mouse_l == true) ? mouse_l : Input.GetMouseButton(0);        //이미 입력이 true라면 true
-            mouse_r = (mouse_r == true) ? mouse_r : Input.GetMouseButton(1);        
-            if(mouse_l && mouse_r)            //동시 클릭이라면
+            if(m_ComboAttack.Total > 0)
             {
-                isHold = true;
+                //이미 전에 공격을 했다면, 동시클릭을 받을 필요가 없다.
+            }
+            else
+            {
+                mouse_l |= Input.GetMouseButton(0);        //이미 입력이 true라면 true
+                mouse_r |= Input.GetMouseButton(1);
+
+                if(mouse_l && mouse_r)            //동시 클릭이라면
+                {
+                    isHold = true;
+                }
             }
 
             /*if(isHold == false && (mouse_l && mouse_r))         //홀드 공격은 아닌데, 동시클릭 입력을 받았다
@@ -309,9 +326,7 @@ public class PlayerCtrl : MonoBehaviour
                 mouse_l = false;
                 mouse_r = false;
                 isHold = false;
-                atkTotalCount = 0;
-                atkLeftCount = 0;
-                atkRightCount = 0;
+                OnValidateCombo();
             }
         }
         
@@ -323,9 +338,7 @@ public class PlayerCtrl : MonoBehaviour
         if(combodelay <= 0)         //콤보 딜레이가 0이면 초기화
         {
             //Debug.Log("콤보 시간 초과");
-            atkTotalCount = 0;
-            atkLeftCount = 0;
-            atkRightCount = 0; 
+            OnValidateCombo();
             m_currentMotion = Motion.Idle;
         }
 
@@ -453,21 +466,19 @@ public class PlayerCtrl : MonoBehaviour
         }
         //애니메이션이 끝나기 직전~Combodelay 사이에 시간에 입력을 받음
         int atkCount = 0;
-        atkTotalCount++;
-        atkLeftCount++;     //좌클릭은 전체클릭과 동일하게 증가시켜도 상관 없음.
+        m_ComboAttack.Total++;
+        m_ComboAttack.Left++;     //좌클릭은 전체클릭과 동일하게 증가시켜도 상관 없음.
          
-        if(atkTotalCount > 1 || mouseR)     //공격모션을 1회 끝마친 상태이다.
+        if(m_ComboAttack.Total > 1 || mouseR)     //공격모션을 1회 끝마친 상태이다.
         {
-            atkRightCount++;
+            m_ComboAttack.Right++;
         }
 
-        if(atkRightCount == atkLeftCount)   //좌클릭, 우클릭 입력횟수가 같다면(우클릭을 먼저 했다면)
+        if(m_ComboAttack.Right == m_ComboAttack.Left)   //좌클릭, 우클릭 입력횟수가 같다면(우클릭을 먼저 했다면)
         {
             if(mouseL)                      //좌클릭이 안되는 상황에서 좌클릭을 했다면
             {
-                atkTotalCount = 0;
-                atkLeftCount = 0;
-                atkRightCount = 0;
+                OnValidateCombo();
                 return;
             }
         }
@@ -477,23 +488,21 @@ public class PlayerCtrl : MonoBehaviour
         //Debug.Log("atkTotalCount : " + atkTotalCount + ", LeftCount = " + atkLeftCount + ", RightCount = " + atkRightCount);
         if(mouseL)
         {
-            atkCount = atkLeftCount;
-            Debug.Log("LeftCount = " + atkLeftCount);
+            atkCount = m_ComboAttack.Left;
+            Debug.Log("LeftCount = " + m_ComboAttack.Left);
         }
         if(mouseR)
         {
-            atkCount = atkRightCount;
-            Debug.Log("RightCount = " + atkRightCount);
+            atkCount = m_ComboAttack.Right;
+            Debug.Log("RightCount = " + m_ComboAttack.Right);
         }
         
         Debug.Log("atkCount = " + atkCount);
         animatorCtrl.Attack(mouseL,mouseR,atkCount);
 
-        if(atkTotalCount >= 3 || atkRightCount >= 2)        //전체공격 횟수가 3번(좌클릭 3번, 우클릭 2번)이 넘었다면, 콤보 초기화 -> 애초에 좌클릭만 콤보가 되기 때문에 우클릭의 카운트가 3이상 될 수가 없다
+        if(m_ComboAttack.Total >= 3 || m_ComboAttack.Right >= 2)        //전체공격 횟수가 3번(좌클릭 3번, 우클릭 2번)이 넘었다면, 콤보 초기화 -> 애초에 좌클릭만 콤보가 되기 때문에 우클릭의 카운트가 3이상 될 수가 없다
         {
-            atkTotalCount = 0;
-            atkLeftCount = 0;
-            atkRightCount = 0;
+            OnValidateCombo();
         }
     }
 
@@ -518,7 +527,7 @@ public class PlayerCtrl : MonoBehaviour
         }
         if(mouseWheeling <= 0)
         {
-            mouseWheeling = wheelingSpeed;
+            mouseWheeling = mouseWheelValue;
             isWheel = false;
         }
 
