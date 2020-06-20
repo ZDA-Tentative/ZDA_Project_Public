@@ -2,8 +2,6 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <CscToolPath>C:\Program Files\Unity\Hub\Editor\2019.3.13f1\Editor\Data\Tools\RoslynScripts</CscToolPath>
-    <CscToolExe>unity_csc.bat</CscToolExe>
   </PropertyGroup>
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -54,6 +52,9 @@
     <UnityVersion>2019.3.13f1</UnityVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Analyzers\Microsoft.Unity.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2019.3.13f1\Editor\Data\Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>
@@ -70,6 +71,7 @@
     <Compile Include="Assets\1_H\SampleScenes\Scripts\ParticleSceneControls.cs" />
     <Compile Include="Assets\1_H\SampleScenes\Scripts\PlaceTargetWithMouse.cs" />
     <Compile Include="Assets\1_H\SampleScenes\Scripts\SlowMoButton.cs" />
+    <Compile Include="Assets\1_H\Scripts\DataType.cs" />
     <Compile Include="Assets\1_H\Scripts\Game.cs" />
     <Compile Include="Assets\1_H\Scripts\PlayerAnimatorCtrl.cs" />
     <Compile Include="Assets\1_H\Scripts\PlayerCtrl.cs" />
@@ -130,6 +132,7 @@
     <Compile Include="Assets\1_H\Standard Assets\ParticleSystems\Scripts\WaterHoseParticles.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\ActivateTrigger.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\AlphaButtonClickMask.cs" />
+    <Compile Include="Assets\1_H\Standard Assets\Utility\AutoMobileShaderSwitch.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\AutoMoveAndRotate.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\CameraRefocus.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\CurveControlledBob.cs" />
@@ -143,6 +146,7 @@
     <Compile Include="Assets\1_H\Standard Assets\Utility\LerpControlledBob.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\ObjectResetter.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\ParticleSystemDestroyer.cs" />
+    <Compile Include="Assets\1_H\Standard Assets\Utility\PlatformSpecificContent.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\SimpleActivatorMenu.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\SimpleMouseRotator.cs" />
     <Compile Include="Assets\1_H\Standard Assets\Utility\SmoothFollow.cs" />
@@ -182,6 +186,7 @@
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\OffMeshLinkJump.cs" />
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\PlayerController.cs" />
     <Compile Include="Assets\2_SC\TESTASSET\Scripts\SimplePatrol.cs" />
+    <Compile Include="Assets\Asset\Mixamo\Melee Axe Pack\Demo\CameraScroll.cs" />
     <None Include="Assets\1_H\Standard Assets\Prototyping\Shaders\WorldCoordDiffuse.shader" />
     <None Include="Assets\1_H\Standard Assets\Effects\Projectors\Shaders\ProjectorLight.shader" />
     <None Include="Assets\1_H\Standard Assets\Effects\Projectors\Shaders\ProjectorMultiply.shader" />
@@ -756,31 +761,31 @@
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.3.13f1/Editor/Data/MonoBleedingEdge/lib/mono/unityscript/Boo.Lang.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline.Editor">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.VSCode.Editor">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.VSCode.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro.Editor">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.TextMeshPro.Editor.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Timeline">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Timeline.dll</HintPath>
     </Reference>
     <Reference Include="Unity.CollabProxy.Editor">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.CollabProxy.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.Rider.Editor">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.Rider.Editor.dll</HintPath>
     </Reference>
     <Reference Include="Unity.TextMeshPro">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/Unity.TextMeshPro.dll</HintPath>
     </Reference>
     <Reference Include="UnityEditor.UI">
-      <HintPath>C:/Users/money/Documents/practice/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
+      <HintPath>C:/Users/Administrator/Documents/GitHub/ZDA_Project_Public/ZDA_TEST/Library/ScriptAssemblies/UnityEditor.UI.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup></ItemGroup>
