@@ -10,8 +10,8 @@ public class Sc_BossMoveAI : MonoBehaviour
     public List<Transform> wayPoints;      // 순찰 지점들을 저장하기 위한 List타입의 변수
     public int nextWayIdx;                 // 다음 순찰 지점 배열의 인덱스
 
-    private readonly float patrolSpeed = 1.5f;
-    private readonly float traceSpeed = 8.0f;
+    public float patrolSpeed = 1.5f;
+    public float traceSpeed = 8.0f;
 
     //회전할 때의 속도를 조절하는 계수
     private float damping = 1.0f;
@@ -94,7 +94,7 @@ public class Sc_BossMoveAI : MonoBehaviour
     }
 
 
-    private void Trace(Vector3 pos)
+    public void Trace(Vector3 pos)
     {
         // 최단거리 경로가 아직 끝나지 않았을때는 리턴시킨다.
         if (agent.isPathStale)

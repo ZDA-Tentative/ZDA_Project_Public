@@ -64,7 +64,7 @@ public class Sc_Boss : MonoBehaviour
 
 // [Chase]
 
-    public float chaseDis = 3;
+    float dist;
 
 // [waiting_for_battle]
     public float Waiting_for_battle_WaitTIme = 2;
@@ -74,7 +74,7 @@ public class Sc_Boss : MonoBehaviour
 // [Attack]
 
     public GameObject target;       // 공격할 대상 
-    public float attackDis = 1;     // 공격 감지 범위 
+    public float attackDis = 1.5f;     // 공격 감지 범위 
 
 // TEST
     public Material testMat;
@@ -183,28 +183,34 @@ public class Sc_Boss : MonoBehaviour
             }
             // 히트 되었을때  // 히트 된 부분은 따로 설정 해야함.
 
-// == anitime End == 
+            // == anitime End == 
 
-            if(sc_EnemyAttack.IsAttackOver)
-            {
-                Debug.Log("공격 끝났음");
-                bossState = BossState.chase;
-            }
-            
+            //if(sc_EnemyAttack.IsAttackOver)
+            //{
+            //    Debug.Log("공격 끝났음");
+            //    bossState = BossState.chase;
+            //    yield break; 
+            //}
 
-            float dist = Vector3.Distance(navMeshAgent.destination, transform.position);
-            //Debug.Log("dist : " + dist);
+
+            dist = Vector3.Distance(target.transform.position, transform.position);
             // if문으로 조건을 처리하다 보니 기본값은 하위로 체크가 먼저 필요한 것은 상위로 배치 된다. 
-            // == 공격 == 
+            Debug.Log("거리 : " + dist);
+        // == 공격 == 
             if (dist < attackDis)
             {
                 bossState = BossState.attack;
-               
+                //yield break;
+
+
             }
-            // == 추적 ==  
-            else
+        // == 추적 ==  
+            else if ((attackDis <  dist) && IsAnimationOver )
             {
+                Debug.Log("BossState.chase : " + dist);
                 bossState = BossState.chase;
+                //yield break;
+
             }
 
             
@@ -226,32 +232,34 @@ public class Sc_Boss : MonoBehaviour
                     bossState = BossState.chase;
                     animator.SetTrigger(hash_Trigger_Idle);
                     idle();
-
                     //sc_EnemyAttack.IsAttack = false;
-
                     break;
 
                 case BossState.chase:
-                    // 실행
-                    sc_BossMoveAi.TraceTarget = target.transform.position;
+                    
+                    sc_BossMoveAi.TraceTarget = target.transform.position; // 실행 프로퍼티 
                     animator.SetTrigger(hash_Trigger_Chase);
                     Chase();
 
                     sc_EnemyAttack.IsAttack = false;
-                    break;
+                    break; // 
 
                 case BossState.attack:
-                    // 실행
-                    sc_EnemyAttack.IsAttack = true; // 공격을 시작한다. 
+                    
+                    sc_EnemyAttack.IsAttack = true; // 실행프로퍼티 공격을 시작한다. 
                     sc_BossMoveAi.Stop();           // 공격할때는 움직이지 않는다. 
                     animator.SetTrigger(hash_Trigger_attack_trigger);
-                    if(0 < sc_EnemyAttack.boss_Attck_Pattern_Temp.Count)
+                    if(0 < sc_EnemyAttack.boss_Attck_Pattern_Temp.Count) // 예외처리 
                     {
                         animator.SetInteger(hash_attackIndex, (int)sc_EnemyAttack.boss_Attck_Pattern_Temp[sc_EnemyAttack.ArrPointer]);
                     }
-                    
+                    // 어택이 한번 끝나고 destination을 초기화 해주기 위해
+                    //bossState = BossState.waiting_for_battle;
+                    break;
 
+                case BossState.waiting_for_battle:
                     
+                    dist = Vector3.Distance(navMeshAgent.destination, transform.position);
                     break;
 
                 case BossState.die:
@@ -266,7 +274,7 @@ public class Sc_Boss : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        //sc_BossMoveAi.Trace(target.transform.position);
     }
     void idle()
     {
@@ -301,5 +309,28 @@ public class Sc_Boss : MonoBehaviour
         Debug.Log(" 애니메이션 끝.");
         isAnimationOver = true;
     }
+    private void AniEvt_IsAnimationStart()
+    {
+        Debug.Log(" 애니메이션 끝.");
+        isAnimationOver = true;
+    }
 
 }
+
+///
+/// 버그리스트
+/// 
+/// 1. 애니메이션이 끝나기도 전에 움직여서 굉장히 보기 안좋다. 
+/// 
+/// isAnimationOver가 true가 되었을때 그리고 공격범위를 벗어났을때 Chase를 하자
+/// => 안됨.
+/// 조건을 검색하고 함수 실행중인데 조건이 매 프레임마다 일어나서 조건이 맞자 마자 바로 상태변이가 일어나고 
+/// 바로 실행시켜서 어택도중에 Chase가 되어버리는거같다. 
+/// => 그럼 공격중에는 함수 실행안되게 예외처리 하자.
+///     => 공격중이라는것을 어떻게 알것인가? 
+///        공격중에는 애니메이션을 실행한다. 애니메이션이 실행될때
+///     
+/// 
+/// 
+/// 
+///
