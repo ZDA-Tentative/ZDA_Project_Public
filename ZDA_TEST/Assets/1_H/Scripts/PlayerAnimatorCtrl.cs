@@ -29,6 +29,11 @@ public class PlayerAnimatorCtrl : MonoBehaviour
         mAnimator.SetBool("moved",moving);
     }
 
+    internal void Rotate(string direction)
+    {
+        mAnimator.SetTrigger("rotate" + direction);
+    }
+
     internal void Dash(bool dash)
     {
         mAnimator.SetBool("dash",dash);
@@ -61,22 +66,23 @@ public class PlayerAnimatorCtrl : MonoBehaviour
                 for(int i = 1; i <= 3 && !isMotion; i++)
                 {
                     //isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
-                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "L" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "L" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95f) || isMotion;
                     if(i == 3)
                     {
                         break;
                     }
-                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "R" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + "R" + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95f) || isMotion;
                 }
                 break;
             case "avoid":
                 for(int i = 0; i < 4 && !isMotion; i++)
                 {
-                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                    isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName + i.ToString()) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95f) || isMotion;
                 }
                 break;
             default:                //공격 모션 이외에는 추가되는 변수명이 존재하지 않는다.
-                isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.98f) || isMotion;
+                //Debug.Log("모션End 접근중 : " + motionName);
+                isMotion = (mAnimator.GetCurrentAnimatorStateInfo(0).IsName(motionName) && mAnimator.GetCurrentAnimatorStateInfo(0).normalizedTime >= 0.95f) || isMotion;
                 break;
         }
 

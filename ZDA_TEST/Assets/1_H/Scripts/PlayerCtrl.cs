@@ -14,6 +14,9 @@ public class PlayerCtrl : MonoBehaviour
     public string CharacterName;    //플레이어 캐릭터의 이름 (이 정보를 바탕으로 세이브/로드한다.)
     //public                        //텍스쳐(스킨/복장)
 
+    //회전 애니메이션 변수
+    private float rotateValue = 30.0f;              //30도가 돌아가면, 캐릭터는 회전 애니메이션을 보여준다.
+
     //이동 제어 변수
     private float speed = 1f;
     private float h, v;
@@ -193,7 +196,7 @@ public class PlayerCtrl : MonoBehaviour
                 }
                 break;
             case Motion.HoldAttack:
-                if(animatorCtrl.MotionEnd("hold"))    //애니메이션 재생이 끝났다면
+                if(animatorCtrl.MotionEnd("holdAttack"))    //애니메이션 재생이 끝났다면
                 {
                     isAttackAble = true;
                     Debug.Log("홀드 공격 모션 끝!");
@@ -617,18 +620,33 @@ public class PlayerCtrl : MonoBehaviour
         float sheta = mTrans.eulerAngles.y - mCam.eulerAngles.y;
         //sheta값이 180보다 크다면, -360도를 해줄 필요가 있다 (-180~+180 회전값 반환을 위해)
         sheta = sheta < 180 ? sheta : sheta - 360;
-        Vector3 camVector = new Vector3(mCam.forward.x, 0, mCam.forward.z);         //캠이 보는 방향(파란색)
-        Vector3 playerVector = new Vector3(mTrans.forward.x,0,mTrans.forward.z);    //캐릭터가 보는 방향(빨간색)
 
-        //float Dot = Vector3.Dot(playerVector,camVector);
-        //float sheta = Mathf.Acos(Dot);
-        //float sheta = Quaternion.FromToRotation(Vector3.up,camVector - playerVector).eulerAngles.z;
-        //Vector3 v = camVector - playerVector;
-        //float sheta = Mathf.Atan2(v.y, v.x) * Mathf.Rad2Deg;
-            
-        //Debug.Log("카메라-플레이어 사이각 : " + sheta);
+        //해당 Vector는 카메라의 방향, 플레이어의 방향의 위치를 보여주기 위한 식이다. 밑의 Debug.DrawRay와 함께 주석처리해주길 바람.
+        Vector3 camVector = new Vector3(mCam.forward.x,0,mCam.forward.z);           //캠이 보는 방향(파란색)
+        Vector3 playerVector = new Vector3(mTrans.forward.x,0,mTrans.forward.z);    //캐릭터가 보는 방향(빨간색)
+        Debug.Log("카메라-플레이어 사이각 : " + sheta);
         Debug.DrawRay(mCam.position,camVector * 10,Color.blue);
         Debug.DrawRay(mTrans.position,playerVector * 10,Color.red);
+
+        if(sheta > rotateValue)         //캐릭터가 보는 방향과 캠이 보는 방향 사이각이 [일정수치]를 넘어가면 캐릭터 회전 애니메이션 출력
+        {
+            //오른쪽 회전
+            animatorCtrl.Rotate("R");
+        }
+        else if(sheta < -rotateValue)
+        {
+            //왼쪽 회전
+            animatorCtrl.Rotate("L");
+        }
+        else
+        {
+            //회전값이 없으면 더이상 실행시킬 필요가 없다.
+            return;
+        }
+
+        //캐릭터 방향 = 카메라 방향 으로 수정
+        mTrans.rotation = mCam.transform.rotation;
+
     }
 
     private GameObject Targeting()
