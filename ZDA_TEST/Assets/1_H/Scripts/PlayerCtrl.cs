@@ -196,6 +196,9 @@ public class PlayerCtrl : MonoBehaviour
                 }
                 break;
             case Motion.HoldAttack:
+
+                //해당 구간에 Hold를 끊었을 때의 처리도 해야한다.
+
                 if(animatorCtrl.MotionEnd("holdAttack"))    //애니메이션 재생이 끝났다면
                 {
                     isAttackAble = true;
@@ -588,6 +591,7 @@ public class PlayerCtrl : MonoBehaviour
         
     }
 
+    //해당 메소드는 디버그를 위해 쓰인 메소드입니다. IsDbl()에서 animatorCtrl.Avoid(direction); 만 처리해도 괜찮습니다.
     private void AvoidAnimation(int direction)          //회피 애니메이션
     {
 

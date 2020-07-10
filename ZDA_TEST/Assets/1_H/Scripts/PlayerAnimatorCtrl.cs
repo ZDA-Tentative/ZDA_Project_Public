@@ -100,6 +100,7 @@ public class PlayerAnimatorCtrl : MonoBehaviour
         mAnimator.SetTrigger("holdAttack");
     }
 
+    //해당 메소드 필요 없음 (혹은 차지모션 중간에 풀릴경우, 이 메소드가 실행하도록 하자!)
     internal void HoldAttackFake()
     {
         Debug.Log("홀드Fake 어택 출력");
